@@ -7,6 +7,10 @@ Brings variant match pattern to TypeScript.
 - [What are Variants?](#what-are-variants)
 - [What is a Match Expression?](#what-is-a-match-expression)
 - [Getting Started](#getting-started)
+- [Included Variants](#included-variants)
+  - [Optional Variant](#optional-variant)
+  - [Result Variant](#result-variant)
+
 ## What are Variants?
 
 Variants are a simple yet powerful way to represent a set of various states that can contain deferring data. Variants help you write code in a way where invalid states are not representable. Together when the match expression this can greatly reduce complexity and help improve readability of the code.
@@ -66,8 +70,41 @@ handleABCVariantsOnlyA(B(123, true)); // 'B or C'
 handleABCVariantsOnlyA(C); // 'B or C'
 ```
 
+Included with this library are two helpful variants Optional and Result.
+
+## Optional Variant:
+
+```ts
+import { match } from "variant-match";
+import { Optional, Some, None } from "variant-match/optional";
+
+const handleOptionalString = (str: Optional<string>) => {
+  return match(str, {
+    Some(str) {
+      return str;
+    },
+    None() {
+      return "default string";
+    },
+  });
+};
+
+handleOptionalString(Some("test")); // 'test'
+handleOptionalString(None); // 'default string'
 ```
 
+## Result Variant:
+
+```ts
+import { match } from "variant-match";
+import { Result, Ok, Err } from "variant-match/result";
+
+const parseInteger = (value: string): Result<number, Error> => {
+  const integer = parseInt(value);
+
+  if (Number.isNaN(integer)) {
+    return Err(new Error("Parsed value resulted in NaN"));
+  }
 
   return Ok(integer);
 };
