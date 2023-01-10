@@ -30,9 +30,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - run: npx tsc
-      - run: cp package*.json dist/
-      - run: cp README.md dist/
-      - run: (cd dist && npm publish)
+      - run: ./scripts/publish-package.sh
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
@@ -50,8 +48,6 @@ jobs:
           registry-url: https://npm.pkg.github.com/
       - run: npm ci
       - run: npx tsc
-      - run: cp package*.json dist/
-      - run: cp README.md dist/
-      - run: (cd dist && npm publish)
+      - run: ./scripts/publish-package.sh
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
