@@ -50,7 +50,7 @@ const assertVariant = (v: any) => {
 
   if (!hasType || !hasValues) {
     throw new TypeError(
-      `Expected value is not of type Variant { type: string; values: any[]; }`
+      `Expected value is not of type Variant { ${kind_symbol.toString()}: string, ${values_symbol.toString()}: any[] }`
     );
   }
 };

@@ -1,6 +1,6 @@
 {
   "name": "variant-match",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Brings variant match pattern to TypeScript.",
   "main": "variant.js",
   "scripts": {
