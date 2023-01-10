@@ -1,5 +1,10 @@
 # Variant Match
 
+[![GitHub release](https://img.shields.io/github/release/Mike96angelo/variant-match.svg?maxAge=21600)](https://github.com/Mike96Angelo/variant-match)
+[![npm version](https://img.shields.io/npm/v/variant-match.svg?maxAge=21600)](https://www.npmjs.com/package/variant-match)
+[![npm downloads](https://img.shields.io/npm/dm/variant-match.svg?maxAge=604800)](https://www.npmjs.com/package/variant-match)
+[![npm downloads](https://img.shields.io/npm/dt/variant-match.svg?maxAge=604800)](https://www.npmjs.com/package/variant-match)
+
 Brings variant match pattern to TypeScript.
 
 ### Table of Contents
