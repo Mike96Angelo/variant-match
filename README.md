@@ -1,5 +1,3 @@
-# Variants.ts
-Brings Rust style Variants and match statements to TypeScript
 # Variant Match
 
 Brings variant match pattern to TypeScript.
