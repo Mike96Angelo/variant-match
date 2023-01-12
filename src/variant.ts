@@ -40,7 +40,7 @@ interface Match {
   <V extends Variant<any, any[]>, M extends Partial<Matcher<V, any>>, R>(
     variant: V,
     matcher: Exact<M, V[typeof kind_symbol]>,
-    fallback: (variant: ExcludeVariant<V, keyof M>) => R
+    catchAll: (variant: ExcludeVariant<V, keyof M>) => R
   ): MatcherReturn<M> | R;
 }
 
@@ -55,7 +55,7 @@ const assertVariant = (v: any) => {
   }
 };
 
-const matchFallback = (variant: Variant<any, any[]>) => {
+const defaultCatchAll = (variant: Variant<any, any[]>) => {
   throw new TypeError(
     `Unhandled variant ${JSON.stringify(variant[kind_symbol])}.`
   );
@@ -64,7 +64,7 @@ const matchFallback = (variant: Variant<any, any[]>) => {
 const match: Match = (
   variant: Variant<any, any[]>,
   matcher: Record<string, Func<any[], any>>,
-  fallback = matchFallback as Func<any[], any>
+  catchAll = defaultCatchAll as Func<any[], any>
 ) => {
   assertVariant(variant);
 
@@ -74,7 +74,7 @@ const match: Match = (
     return func(...variant[values_symbol]);
   }
 
-  return fallback(variant);
+  return catchAll(variant);
 };
 
 const variant = <K extends string, V extends any[]>(
