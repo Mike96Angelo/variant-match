@@ -18,7 +18,7 @@ Brings variant match pattern to TypeScript.
 
 ## What are Variants?
 
-Variants are a simple yet powerful way to represent a set of various states that can contain deferring data. Variants help you write code in a way where invalid states are not representable. Together when the match expression this can greatly reduce complexity and help improve readability of the code.
+Variants are a simple yet powerful way to represent a set of various states that can contain deferring data. Variants help you write code in a way where invalid states are not representable. Together with the match expression this can greatly reduce complexity and help improve readability of the code.
 
 ## What is a Match Expression?
 
