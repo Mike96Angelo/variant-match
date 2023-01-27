@@ -6,8 +6,8 @@ import { InferVariant, match, variant, VariantBranch } from "./variant";
  * returns the `err` wrapped in the Err variant. Otherwise it returns `value`
  * wrapped in the Ok variant.
  *
- * @param err A value representing the err state.
- * @param value A value representing the ok state.
+ * @param err - A value representing the err state.
+ * @param value - A value representing the ok state.
  * @returns A Result.
  */
 export function Result<T, E = unknown>(err: E, value: T): Result<T, E> {
@@ -19,11 +19,11 @@ export namespace Result {
   export const Err = <T>(error: T) => variant("Err", error);
 
   /**
-   * Maps a Result\<T\, E> to a Result\<M\, E>
+   * Maps a `Result<T, E>` to a `Result<M, E>`
    *
-   * @param value An Result\<T\, E>
-   * @param mapper A function that maps T to M
-   * @returns An Result\<M\, E>
+   * @param value - An `Result<T, E>`
+   * @param mapper - A function that maps `T` to `M`
+   * @returns An `Result<M, E>`
    */
   export const map = <T, M, E = unknown>(
     result: Result<T, E>,
@@ -44,7 +44,7 @@ export namespace Result {
    *
    * @param value A Result variant
    * @param fallback A function to call if `value` is the Err variant.
-   * @returns
+   * @returns The value stored in the Ok variant or the result of calling `fallback`.
    */
   export const fallback = <T, E = unknown>(
     value: Result<T, any>,
@@ -63,7 +63,7 @@ export namespace Result {
    * returns the Err variant, otherwise it wraps the return of
    * `func` in the Ok variant.
    *
-   * @param func A function that throws.
+   * @param func - A function that throws.
    * @returns A new function that calls `func` wrapping its
    *          return in a Result.
    */
@@ -86,7 +86,7 @@ export namespace Result {
    * the Promise of Err variant, otherwise it wraps the resolved value in
    * the Ok variant.
    *
-   * @param func A function that throws.
+   * @param func - A function that throws.
    * @returns A new function that calls `func` wrapping its
    *          returned Promise into a Promise of Result.
    */
@@ -102,7 +102,7 @@ export namespace Result {
 
   /**
    * Converts a function the receives a Result into a node.js style callback function
-   * @param func a function the receives a Result.
+   * @param func - A function the receives a Result.
    * @returns A node.js style callback function
    */
   export const callback =
