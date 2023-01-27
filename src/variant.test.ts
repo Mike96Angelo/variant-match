@@ -1,16 +1,9 @@
-import {
-  variant,
-  match,
-  // InferVariant,
-  kind_symbol,
-  values_symbol,
-} from "./variant";
+import { variant, match } from "./variant";
+import { kind_symbol, values_symbol } from "./util.symbols";
 
 const A = (a: string) => variant("A", a);
 const B = (b: number, bool: boolean) => variant("B", b, bool);
 const C = variant("C");
-
-// type ABC = InferVariant<typeof A | typeof B | typeof C>;
 
 describe("match", () => {
   it("Throws if the passed in value is not a variant.", () => {
