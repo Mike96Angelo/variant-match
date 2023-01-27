@@ -6,7 +6,7 @@ import { InferVariant, match, variant, VariantBranch } from "./variant";
  * If the `value` is nullish it returns the None variant
  * otherwise it wraps the `value` in the Some variant.
  *
- * @param value A nullable value.
+ * @param value - A nullable value.
  * @returns An Optional variant.
  */
 export function Optional<T>(value: T): Optional<NonNullable<T>> {
@@ -18,11 +18,11 @@ export namespace Optional {
   export const None = variant("None");
 
   /**
-   * Maps an Optional\<T\> to an Optional\<M\>
+   * Maps an `Optional<T>` to an `Optional<M>`.
    *
-   * @param value An Optional\<T\>
-   * @param mapper A function that maps T to M
-   * @returns An Optional\<M\>
+   * @param value - An `Optional<T>`
+   * @param mapper - A function that maps T to M
+   * @returns An `Optional<M>`
    */
   export const map = <T, M>(
     value: Optional<T>,
@@ -41,9 +41,9 @@ export namespace Optional {
    * If `value` is the Some variant it returns the value stored in it,
    * otherwise it returns the result of executing the `fallback` function.
    *
-   * @param value A Optional variant
-   * @param fallback A function to call if `value` is the None variant.
-   * @returns
+   * @param value - An Optional variant
+   * @param fallback - A function to call if `value` is the None variant.
+   * @returns The value stored in the Some variant or the result of calling `fallback`.
    */
   export const fallback = <T>(
     value: Optional<T>,
@@ -61,7 +61,7 @@ export namespace Optional {
    * a nullable return signature and converts it to a
    * Optional return signature.
    *
-   * @param func A function with a nullable return signature
+   * @param func - A function with a nullable return signature
    * @returns A new function that calls `func` wrapping its
    *          return in an Optional.
    */
