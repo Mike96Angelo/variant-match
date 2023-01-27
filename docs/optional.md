@@ -92,7 +92,7 @@ Maps an `Optional<T>` to an `Optional<M>`.
 
 **Example:**
 ```ts
-Optional.map(Some(9), (num) => num.toString()); // "9"
+Optional.map(Some(9), (num) => num.toString()); // Some("9")
 Optional.map(None, (num) => num.toString()); // None
 ```
 
