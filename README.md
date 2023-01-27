@@ -12,9 +12,7 @@ Brings variant match pattern to TypeScript.
 - [What are Variants?](#what-are-variants)
 - [What is a Match Expression?](#what-is-a-match-expression)
 - [Getting Started](#getting-started)
-- [Included Variants](#included-variants)
-  - [Optional Variant](#optional-variant)
-  - [Result Variant](#result-variant)
+- [Documentation](/docs/variant.md)
 
 ## What are Variants?
 
@@ -73,58 +71,4 @@ const handleABCVariantsOnlyA = (value: ABC) =>
 handleABCVariantsOnlyA(A("test")); // 'A: test'
 handleABCVariantsOnlyA(B(123, true)); // 'B or C'
 handleABCVariantsOnlyA(C); // 'B or C'
-```
-
-Included with this library are two helpful variants Optional and Result.
-
-## Optional Variant:
-
-```ts
-import { match } from "variant-match";
-import { Optional, Some, None } from "variant-match/optional";
-
-const handleOptionalString = (str: Optional<string>) => {
-  return match(str, {
-    Some(str) {
-      return str;
-    },
-    None() {
-      return "default string";
-    },
-  });
-};
-
-handleOptionalString(Some("test")); // 'test'
-handleOptionalString(None); // 'default string'
-```
-
-## Result Variant:
-
-```ts
-import { match } from "variant-match";
-import { Result, Ok, Err } from "variant-match/result";
-
-const parseInteger = (value: string): Result<number, Error> => {
-  const integer = parseInt(value);
-
-  if (Number.isNaN(integer)) {
-    return Err(new Error("Parsed value resulted in NaN"));
-  }
-
-  return Ok(integer);
-};
-
-const parseIntOrZero = (str: string) => {
-  return match(parseInteger(str), {
-    Ok(int) {
-      return int;
-    },
-    Err() {
-      return 0;
-    },
-  });
-};
-
-parseIntOrZero("123"); // 123
-parseIntOrZero("abc"); // 0
 ```
