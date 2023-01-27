@@ -62,10 +62,10 @@ const defaultCatchAll = (variant: Variant<any, any[]>) => {
 /**
  * Executes a named branch that matches the variant passed in.
  *
- * @param variant A variant to match on.
- * @param matcher An object containing named branches for each variant kind.
- * @param catchAll An optional catch-all branch used if you don't need to handle
- *                 all branches independently.
+ * @param variant - A variant to match on.
+ * @param matcher - An object containing named branches for each variant kind.
+ * @param catchAll - An optional catch-all branch used if you don't need to handle
+ *                   all branches independently.
  * @returns The result of the named branch or catchAll that was executed.
  */
 const match: Match = (
@@ -87,11 +87,11 @@ const match: Match = (
 /**
  * Creates a instance of a variant with the givin kind and values.
  *
- * @param kind A unique name, this name will be used as the named branch to
- *             execute in the match expression.
- * @param values Any data that that will be stored in the variant, this data
- *               will be available as arguments within the named branch of a
- *               match expression.
+ * @param kind - A unique name, this name will be used as the named branch to
+ *               execute in the match expression.
+ * @param values - Any data that that will be stored in the variant, this data
+ *                 will be available as arguments within the named branch of a
+ *                 match expression.
  * @returns An instance of a variant.
  */
 const variant = <K extends string, V extends any[]>(
