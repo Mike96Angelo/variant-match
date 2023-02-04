@@ -1,4 +1,4 @@
-import { Optional, toOptional, None as OptionalNone } from "./optional";
+import { Optional, toOptional, None } from "./optional";
 import { Func } from "./util.types";
 import { Variant, variant, SumTypeClass } from "./variant";
 
@@ -6,7 +6,7 @@ type OptionalPairVariants<A, B> =
   | Variant<"First", [first: A]>
   | Variant<"Second", [second: B]>
   | Variant<"Both", [first: A, second: B]>
-  | Variant<"None">;
+  | Variant<"Neither">;
 
 class OptionalPair<A, B> extends SumTypeClass<OptionalPairVariants<A, B>> {
   first(): Optional<A> {
@@ -18,7 +18,7 @@ class OptionalPair<A, B> extends SumTypeClass<OptionalPairVariants<A, B>> {
         return toOptional(first);
       },
       _() {
-        return OptionalNone;
+        return None;
       },
     });
   }
@@ -32,7 +32,7 @@ class OptionalPair<A, B> extends SumTypeClass<OptionalPairVariants<A, B>> {
         return toOptional(second);
       },
       _() {
-        return OptionalNone;
+        return None;
       },
     });
   }
@@ -43,7 +43,7 @@ class OptionalPair<A, B> extends SumTypeClass<OptionalPairVariants<A, B>> {
         return toOptional([first, second]);
       },
       _() {
-        return OptionalNone;
+        return None;
       },
     });
   }
@@ -54,13 +54,13 @@ class OptionalPair<A, B> extends SumTypeClass<OptionalPairVariants<A, B>> {
         return toOptional(combine(first, second));
       },
       _() {
-        return OptionalNone;
+        return None;
       },
     });
   }
 }
 
-const None = new OptionalPair<any, any>(variant("None"));
+const Neither = new OptionalPair<any, any>(variant("Neither"));
 
 const First = <A, B>(
   first: Optional<A>
@@ -72,7 +72,7 @@ const First = <A, B>(
       );
     },
     None() {
-      return None;
+      return Neither;
     },
   });
 
@@ -86,7 +86,7 @@ const Second = <A, B>(
       );
     },
     None() {
-      return None;
+      return Neither;
     },
   });
 
@@ -117,7 +117,7 @@ const Both = <A, B>(
           );
         },
         None() {
-          return None;
+          return Neither;
         },
       });
     },
@@ -129,4 +129,4 @@ const toOptionalPair = <A, B>(
 ): OptionalPair<NonNullable<A>, NonNullable<B>> =>
   Both(toOptional(first), toOptional(second));
 
-export { type OptionalPair, None, First, Second, Both, toOptionalPair };
+export { type OptionalPair, Neither, First, Second, Both, toOptionalPair };

@@ -20,7 +20,7 @@ const combineErrsAsArray = <A, B>(errs: OptionalPair<A, B>) =>
     Both(a, b) {
       return [a, b];
     },
-    None() {
+    Neither() {
       return [];
     },
   });
