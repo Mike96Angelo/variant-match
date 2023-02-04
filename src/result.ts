@@ -140,17 +140,30 @@ class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
  * @param value - A value to store in the Ok variant.
  * @returns An Ok variant
  */
-const Ok = <T, E>(value: NonNullable<T>) =>
-  new Result<NonNullable<T>, NonNullable<E>>(variant("Ok", value));
+function Ok<T, E>(value: NonNullable<T>) {
+  if (value == null) {
+    throw new TypeError(
+      "Ok variant of Result cannot be constructed with null or undefined"
+    );
+  }
+
+  return new Result<NonNullable<T>, NonNullable<E>>(variant("Ok", value));
+}
 
 /**
  * Err variant representing the result was an error.
  * @param error - A error to store in the Err variant.
  * @returns An Err variant
  */
-const Err = <T, E>(error: NonNullable<E>) =>
-  new Result<NonNullable<T>, NonNullable<E>>(variant("Err", error));
+function Err<T, E>(error: NonNullable<E>) {
+  if (error == null) {
+    throw new TypeError(
+      "Err variant of Result cannot be constructed with null or undefined"
+    );
+  }
 
+  return new Result<NonNullable<T>, NonNullable<E>>(variant("Err", error));
+}
 /**
  * Converts a `err`, `value` pair into a Result variant. If `err` is not nullish it
  * returns the `err` wrapped in the Err variant. Otherwise it returns `value`
@@ -160,20 +173,14 @@ const Err = <T, E>(error: NonNullable<E>) =>
  * @param value - A value representing the ok state.
  * @returns A Result.
  */
-
 function toResult<T, E>(err: E, value: T): ResultType<T, E>;
 function toResult<T, E>(err: E, value: T): ResultType<T, E>;
 function toResult(err: any, value: any): ResultType<any, any> {
   if (err != null) {
     return Err(err);
   }
-  if (value != null) {
-    return Ok(value);
-  }
 
-  throw new TypeError(
-    "Ok variant of Result cannot be constructed with null or undefined"
-  );
+  return Ok(value);
 }
 
 /**

@@ -92,7 +92,9 @@ function Some<T extends Optional<any>>(value: T): T;
 function Some<T>(value: NonNullable<T>): FlattenOptional<T>;
 function Some(value: any) {
   if (value == null) {
-    return None;
+    throw new TypeError(
+      "Some variant of Optional cannot be constructed with null or undefined"
+    );
   }
 
   if (value instanceof Optional) {
