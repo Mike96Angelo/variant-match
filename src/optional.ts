@@ -1,5 +1,111 @@
+import { Err, Ok, Result } from "./result";
 import { Func } from "./util.types";
-import { InferVariant, match, variant, VariantBranch } from "./variant";
+import { Variant, variant, SumTypeClass } from "./variant";
+
+type OptionalVariants<T> = Variant<"Some", [T]> | Variant<"None">;
+
+type UnwrapOptional<T> = T extends Optional<infer K>
+  ? K extends Optional<any>
+    ? UnwrapOptional<K>
+    : K extends NonNullable<K>
+    ? K
+    : never
+  : T extends NonNullable<T>
+  ? T
+  : never;
+
+type FlattenOptional<T> = Optional<UnwrapOptional<T>>;
+
+class Optional<T> extends SumTypeClass<OptionalVariants<T>> {
+  /**
+   * Maps an `Optional<T>` to an `Optional<M>`.
+   *
+   * @param mapper - A function that maps T to M
+   * @returns An `Optional<M>`
+   */
+  map<M extends Optional<any>>(mapper: Func<[value: T], M>): M;
+  map<M>(mapper: Func<[value: T], M>): Optional<NonNullable<M>>;
+  map<M>(mapper: Func<[value: T], M>) {
+    return this.match({
+      Some(value) {
+        return toOptional(mapper(value));
+      },
+      None() {
+        return None;
+      },
+    });
+  }
+
+  /**
+   * If `value` is the Some variant it returns the value stored in it,
+   * otherwise it returns the result of executing the `fallback` function.
+   *
+   * @param fallback - A function to call if `value` is the None variant.
+   * @returns The value stored in the Some variant or the result of calling `fallback`.
+   */
+  fallback(fallback: Func<[], T>): T {
+    return this.match({
+      Some(value) {
+        return value;
+      },
+      None() {
+        return fallback();
+      },
+    });
+  }
+
+  /**
+   * TODO
+   * @param b
+   * @param combiner
+   * @returns
+   */
+  combine<B, C>(b: Optional<B>, combiner: Func<[a: T, b: B], C>): Optional<C> {
+    return this.map((a) => b.map((b) => combiner(a, b)));
+  }
+
+  /**
+   * Converts this Optional<T> into Result<T, E>
+   * @param error - function to compute E in this Optional in the None variant.
+   * @returns Result<T, E>
+   */
+  toResult<E>(
+    error: () => NonNullable<E>
+  ): Result<NonNullable<T>, NonNullable<E>> {
+    return this.match({
+      Some(value) {
+        return Ok<T, E>(value!);
+      },
+      None() {
+        return Err<T, E>(error());
+      },
+    });
+  }
+}
+
+/**
+ * Some variant representing that their is some value.
+ * @param value - A value to store in the Some variant.
+ * @returns An Some variant
+ */
+function Some<T extends Optional<any>>(value: T): T;
+function Some<T>(value: NonNullable<T>): FlattenOptional<T>;
+function Some(value: any) {
+  if (value == null) {
+    return None;
+  }
+
+  if (value instanceof Optional) {
+    return value;
+  }
+
+  return new Optional(variant("Some", value));
+}
+
+/**
+ * None variant representing that their is no value.
+ */
+const None = new Optional<any>(variant("None"));
 
 /**
  * Converts a nullable type into an Optional variant.
@@ -9,73 +115,50 @@ import { InferVariant, match, variant, VariantBranch } from "./variant";
  * @param value - A nullable value.
  * @returns An Optional variant.
  */
-export function Optional<T>(value: T): Optional<NonNullable<T>> {
-  return value != null ? Optional.Some(value) : Optional.None;
+const toOptional = <T>(value: T): FlattenOptional<T> =>
+  value != null ? Some(value) : None;
+
+/**
+ * Converts a func of type (A) => B to a func of type (Optional<a>) => Optional<B>
+ * @param mapper - A mapping function (A) => B
+ * @returns (Optional<a>) => Optional<B>
+ */
+function OptionalMapper<A, B extends Optional<any>>(
+  mapper: Func<[value: A], B>
+): Func<[a: Optional<A>], B>;
+function OptionalMapper<A, B>(
+  mapper: Func<[value: A], B>
+): Func<[a: Optional<A>], Optional<B>>;
+function OptionalMapper(
+  mapper: Func<[any], any>
+): Func<[value: Optional<any>], Optional<any>> {
+  return (a) => a.map(mapper);
 }
 
-export namespace Optional {
-  export const Some = <T>(value: T) => variant("Some", value);
-  export const None = variant("None");
-
-  /**
-   * Maps an `Optional<T>` to an `Optional<M>`.
-   *
-   * @param value - An `Optional<T>`
-   * @param mapper - A function that maps T to M
-   * @returns An `Optional<M>`
-   */
-  export const map = <T, M>(
-    value: Optional<T>,
-    mapper: (value: T) => M
-  ): Optional<M> =>
-    match(value, {
-      Some(value) {
-        return Some(mapper(value));
-      },
-      None() {
-        return None;
-      },
-    });
-
-  /**
-   * If `value` is the Some variant it returns the value stored in it,
-   * otherwise it returns the result of executing the `fallback` function.
-   *
-   * @param value - An Optional variant
-   * @param fallback - A function to call if `value` is the None variant.
-   * @returns The value stored in the Some variant or the result of calling `fallback`.
-   */
-  export const fallback = <T>(
-    value: Optional<T>,
-    fallback: VariantBranch<None, T>
-  ): T =>
-    match(value, {
-      Some(value) {
-        return value;
-      },
-      None: fallback,
-    });
-
-  /**
-   * A higher-order function that wraps a function with
-   * a nullable return signature and converts it to a
-   * Optional return signature.
-   *
-   * @param func - A function with a nullable return signature
-   * @returns A new function that calls `func` wrapping its
-   *          return in an Optional.
-   */
-  export const returnOptional =
-    <Args extends any[], R>(
-      func: Func<Args, R>
-    ): Func<Args, Optional<NonNullable<R>>> =>
-    (...args) =>
-      Optional(func(...args));
+/**
+ * Converts a func of type (A, B) => C to a func of type (Optional<A>, Optional<B>) => Optional<C>
+ *
+ * @param combiner - A combining function (A, B) => C
+ * @returns (Optional<A>, Optional<B>) => Optional<C>
+ */
+function OptionalCombiner<A, B, C extends Optional<any>>(
+  combiner: Func<[a: A, b: B], C>
+): Func<[a: Optional<A>, b: Optional<B>], C>;
+function OptionalCombiner<A, B, C>(
+  combiner: Func<[a: A, b: B], C>
+): Func<[a: Optional<A>, b: Optional<B>], Optional<C>>;
+function OptionalCombiner(
+  combiner: Func<[any, any], any>
+): Func<[a: Optional<any>, b: Optional<any>], Optional<any>> {
+  return (a, b) => a.combine(b, combiner);
 }
 
-export const Some = Optional.Some;
-export const None = Optional.None;
-export type Some<T> = InferVariant<typeof Optional.Some<T>>;
-export type None = InferVariant<typeof Optional.None>;
-export type Optional<T> = Some<T> | None;
-export type OptionalType<T> = T extends Optional<infer K> ? K : never;
+export {
+  type FlattenOptional as Optional,
+  UnwrapOptional,
+  Some,
+  None,
+  toOptional,
+  OptionalMapper,
+  OptionalCombiner,
+};

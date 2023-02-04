@@ -1,5 +1,155 @@
+import { None, Optional, toOptional } from "./optional";
+import { First, OptionalPair, Second, toOptionalPair } from "./optional-pair";
 import { Func } from "./util.types";
-import { InferVariant, match, variant, VariantBranch } from "./variant";
+import { Variant, variant, SumTypeClass } from "./variant";
+
+type ResultVariants<T, E> = Variant<"Ok", [T]> | Variant<"Err", [E]>;
+type ResultOk<T> = T extends Result<infer K, any> ? K : never;
+type ResultErr<T> = T extends Result<any, infer K> ? K : never;
+
+type ResultType<T, E> = Result<NonNullable<T>, NonNullable<E>>;
+
+const combineErrsAsArray = <A, B>(errs: OptionalPair<A, B>) =>
+  errs.match({
+    First(a) {
+      return [a];
+    },
+    Second(a) {
+      return [a];
+    },
+    Both(a, b) {
+      return [a, b];
+    },
+    None() {
+      return [];
+    },
+  });
+
+class Result<T, E> extends SumTypeClass<ResultVariants<T, E>> {
+  /**
+   * Maps a `Result<T, E>` to a `Result<M, E>`
+   *
+   * @param mapOk - A function that maps `T` to `M`
+   * @param mapErr - A function that maps `E` to `ME`
+   * @returns An `Result<M, E>`
+   */
+  map<M extends Result<any, any>>(mapOk: Func<[value: T], M>): M;
+  map<M>(mapOk: Func<[value: T], M>): ResultType<M, E>;
+  map<M, ME>(
+    mapOk: Func<[value: T], M>,
+    mapErr: Func<[value: E], ME>
+  ): ResultType<M, ME>;
+  map(
+    mapOk: Func<[value: T], any>,
+    mapErr?: Func<[value: E], any>
+  ): ResultType<any, any> {
+    return this.match({
+      Ok(value) {
+        const result = mapOk(value);
+        if (result instanceof Result) {
+          return result;
+        }
+
+        return Ok(result);
+      },
+      Err(error) {
+        return Err(mapErr ? mapErr(error) : error);
+      },
+    });
+  }
+
+  /**
+   * If `value` is the Ok variant it returns the value stored in it,
+   * otherwise it returns the result of executing the `fallback` function.
+   *
+   * @param fallback A function to call if `this` is the Err variant.
+   * @returns The value stored in the Ok variant or the result of calling `fallback`.
+   */
+  fallback(fallback: Func<[error: E], T>): T {
+    return this.match({
+      Ok(value) {
+        return value;
+      },
+      Err: fallback,
+    });
+  }
+
+  /**
+   * TODO
+   * @param b
+   * @param combiner
+   * @returns
+   */
+  combine<B, BE, C>(
+    b: Result<B, BE>,
+    combineOk: Func<[a: T, b: B], C>
+  ): ResultType<C, (E | BE)[]>;
+  combine<B, BE, C, CE>(
+    b: Result<B, BE>,
+    combineOk: Func<[a: T, b: B], C>,
+    combineErr: Func<[errors: OptionalPair<E, BE>], CE>
+  ): ResultType<C, CE>;
+  combine(
+    b: Result<any, any>,
+    combineOk: Func<[a: T, b: any], any>,
+    combineErr: Func<[errors: OptionalPair<any, any>], any> = combineErrsAsArray
+  ): ResultType<any, any> {
+    return this.match({
+      Ok(a) {
+        return b.match({
+          Ok(b) {
+            return Ok(combineOk(a, b));
+          },
+          Err(be) {
+            return Err(combineErr(Second(toOptional(be))));
+          },
+        });
+      },
+      Err(ae) {
+        return b.match({
+          Ok() {
+            return Err(combineErr(First(toOptional(ae))));
+          },
+          Err(be) {
+            return Err(combineErr(toOptionalPair(ae, be)));
+          },
+        });
+      },
+    });
+  }
+
+  /**
+   * TODO
+   * @param error
+   * @returns
+   */
+  toOptional(): Optional<NonNullable<T>> {
+    return this.match({
+      Ok(value) {
+        return toOptional(value);
+      },
+      Err() {
+        return None;
+      },
+    });
+  }
+}
+
+/**
+ * Ok variant representing the result was ok.
+ * @param value - A value to store in the Ok variant.
+ * @returns An Ok variant
+ */
+const Ok = <T, E>(value: NonNullable<T>) =>
+  new Result<NonNullable<T>, NonNullable<E>>(variant("Ok", value));
+
+/**
+ * Err variant representing the result was an error.
+ * @param error - A error to store in the Err variant.
+ * @returns An Err variant
+ */
+const Err = <T, E>(error: NonNullable<E>) =>
+  new Result<NonNullable<T>, NonNullable<E>>(variant("Err", error));
 
 /**
  * Converts a `err`, `value` pair into a Result variant. If `err` is not nullish it
@@ -10,114 +160,65 @@ import { InferVariant, match, variant, VariantBranch } from "./variant";
  * @param value - A value representing the ok state.
  * @returns A Result.
  */
-export function Result<T, E = unknown>(err: E, value: T): Result<T, E> {
-  return err != null ? Result.Err(err) : Result.Ok(value);
+
+function toResult<T, E>(err: E, value: T): ResultType<T, E>;
+function toResult<T, E>(err: E, value: T): ResultType<T, E>;
+function toResult(err: any, value: any): ResultType<any, any> {
+  if (err != null) {
+    return Err(err);
+  }
+  if (value != null) {
+    return Ok(value);
+  }
+
+  throw new TypeError(
+    "Ok variant of Result cannot be constructed with null or undefined"
+  );
 }
 
-export namespace Result {
-  export const Ok = <T>(value: T) => variant("Ok", value);
-  export const Err = <T>(error: T) => variant("Err", error);
+/**
+ * TODO
+ * @param mapper
+ * @returns
+ */
+function ResultMapper<T, E, M extends Result<any, any>>(
+  mapper: Func<[value: T], M>
+): Func<[a: Result<T, E>], M>;
+function ResultMapper<T, E, M>(
+  mapper: Func<[value: T], M>
+): Func<[a: Result<T, E>], ResultType<M, E>>;
+function ResultMapper<T, E, M, EM>(
+  mapOk: Func<[value: T], M>,
+  mapErr: Func<[value: E], EM>
+): Func<[a: Result<T, E>], ResultType<M, EM>>;
+function ResultMapper(
+  mapOk: Func<[any], any>,
+  mapErr?: Func<[any], any>
+): Func<[value: Result<any, any>], ResultType<any, any>> {
+  return (a) => a.map(mapOk, mapErr!);
+}
 
-  /**
-   * Maps a `Result<T, E>` to a `Result<M, E>`
-   *
-   * @param value - An `Result<T, E>`
-   * @param mapper - A function that maps `T` to `M`
-   * @returns An `Result<M, E>`
-   */
-  export const map = <T, M, E = unknown>(
-    result: Result<T, E>,
-    mapper: Func<[value: T], M>
-  ): Result<M, E> =>
-    match(result, {
-      Ok(result) {
-        return Ok(mapper(result));
-      },
-      Err(error) {
-        return Err(error);
-      },
-    });
-
-  /**
-   * If `value` is the Ok variant it returns the value stored in it,
-   * otherwise it returns the result of executing the `fallback` function.
-   *
-   * @param value A Result variant
-   * @param fallback A function to call if `value` is the Err variant.
-   * @returns The value stored in the Ok variant or the result of calling `fallback`.
-   */
-  export const fallback = <T, E = unknown>(
-    value: Result<T, any>,
-    fallback: VariantBranch<Err<E>, T>
+/**
+ * TODO
+ * @param combiner
+ *
+ * @returns
+ */
+const ResultCombiner =
+  <A, AE, B, BE, C, CE>(
+    combineOk: Func<[a: A, b: B], C>,
+    combineErr: Func<[errors: OptionalPair<AE, BE>], CE>
   ) =>
-    match(value, {
-      Ok(value) {
-        return value;
-      },
-      Err: fallback,
-    });
+  (a: Result<A, AE>, b: Result<B, BE>): ResultType<C, CE> =>
+    a.combine(b, combineOk, combineErr);
 
-  /**
-   * A higher-order function that wraps a function that throws
-   * into a Result variant. If the `func` throws the new function
-   * returns the Err variant, otherwise it wraps the return of
-   * `func` in the Ok variant.
-   *
-   * @param func - A function that throws.
-   * @returns A new function that calls `func` wrapping its
-   *          return in a Result.
-   */
-  export const returnResult =
-    <A extends any[], T, E = unknown>(
-      func: Func<A, Exclude<T, Promise<any>>>
-    ): Func<A, Result<T, E>> =>
-    (...args: A) => {
-      try {
-        return Ok(func(...args));
-      } catch (e) {
-        return Err(e as E);
-      }
-    };
-
-  /**
-   * A higher-order function that wraps a function that returns a
-   * Promise that may reject into a function that returns a
-   * Promise of Result. If the Promise rejects the new function returns
-   * the Promise of Err variant, otherwise it wraps the resolved value in
-   * the Ok variant.
-   *
-   * @param func - A function that throws.
-   * @returns A new function that calls `func` wrapping its
-   *          returned Promise into a Promise of Result.
-   */
-  export const returnPromiseResult =
-    <A extends any[], T, E = unknown>(
-      func: Func<A, Promise<T>>
-    ): Func<A, Promise<Result<T, E>>> =>
-    (...args: A) =>
-      func(...args).then(
-        (value) => Ok(value),
-        (reason) => Err(reason)
-      );
-
-  /**
-   * Converts a function the receives a Result into a node.js style callback function
-   * @param func - A function the receives a Result.
-   * @returns A node.js style callback function
-   */
-  export const callback =
-    <R, T, E = unknown>(
-      func: Func<[value: Result<T, E>], R>
-    ): Func<[err: E, value: T], R> =>
-    (err, value) =>
-      func(Result(err, value));
-}
-
-export const Ok = Result.Ok;
-export const Err = Result.Err;
-
-export type Ok<T> = InferVariant<typeof Ok<T>>;
-export type Err<E = unknown> = InferVariant<typeof Err<E>>;
-export type Result<T, E = unknown> = Ok<T> | Err<E>;
-export type ResultOk<T> = T extends Result<infer K, any> ? K : never;
-export type ResultErr<E> = E extends Result<any, infer K> ? K : never;
+export {
+  type Result,
+  ResultOk,
+  ResultErr,
+  toResult,
+  ResultMapper,
+  ResultCombiner,
+  Ok,
+  Err,
+};
