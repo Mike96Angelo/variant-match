@@ -51,9 +51,9 @@ const variant = <K extends string, V extends any[]>(
 };
 
 /**
- * SumTypeClass is an abstract class used to define sum type classes which contain variants.
+ * VariantTypeClass is an abstract class used to define sum type classes which contain variants.
  */
-abstract class SumTypeClass<V extends Variant<any, any>> {
+abstract class VariantTypeClass<V extends Variant<any, any>> {
   private variant: V;
   constructor(variant: V) {
     assertVariant(variant);
@@ -87,4 +87,4 @@ abstract class SumTypeClass<V extends Variant<any, any>> {
   }
 }
 
-export { variant, Variant, SumTypeClass, VariantBranch };
+export { variant, Variant, VariantTypeClass, VariantBranch };

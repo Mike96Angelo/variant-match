@@ -1,6 +1,6 @@
 import { Optional, toOptional, None } from "./optional";
 import { Func } from "./util.types";
-import { Variant, variant, SumTypeClass } from "./variant";
+import { Variant, variant, VariantTypeClass } from "./variant";
 
 type OptionalPairVariants<A, B> =
   | Variant<"First", [first: A]>
@@ -8,7 +8,7 @@ type OptionalPairVariants<A, B> =
   | Variant<"Both", [first: A, second: B]>
   | Variant<"Neither">;
 
-class OptionalPair<A, B> extends SumTypeClass<OptionalPairVariants<A, B>> {
+class OptionalPair<A, B> extends VariantTypeClass<OptionalPairVariants<A, B>> {
   first(): Optional<A> {
     return this.match({
       First(first) {

@@ -1,7 +1,7 @@
 import { None, Optional, toOptional } from "./optional";
 import { First, OptionalPair, Second, toOptionalPair } from "./optional-pair";
 import { Func } from "./util.types";
-import { Variant, variant, SumTypeClass } from "./variant";
+import { Variant, variant, VariantTypeClass } from "./variant";
 
 type ResultVariants<T, E> = Variant<"Ok", [T]> | Variant<"Err", [E]>;
 type ResultOk<T> = T extends Result<infer K, any> ? K : never;
@@ -25,7 +25,7 @@ const combineErrsAsArray = <A, B>(errs: OptionalPair<A, B>) =>
     },
   });
 
-class Result<T, E> extends SumTypeClass<ResultVariants<T, E>> {
+class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
   /**
    * Maps a `Result<T, E>` to a `Result<M, E>`
    *

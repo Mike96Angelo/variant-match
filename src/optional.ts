@@ -1,6 +1,6 @@
 import { Err, Ok, Result } from "./result";
 import { Func } from "./util.types";
-import { Variant, variant, SumTypeClass } from "./variant";
+import { Variant, variant, VariantTypeClass } from "./variant";
 
 type OptionalVariants<T> = Variant<"Some", [T]> | Variant<"None">;
 
@@ -16,7 +16,7 @@ type UnwrapOptional<T> = T extends Optional<infer K>
 
 type FlattenOptional<T> = Optional<UnwrapOptional<T>>;
 
-class Optional<T> extends SumTypeClass<OptionalVariants<T>> {
+class Optional<T> extends VariantTypeClass<OptionalVariants<T>> {
   /**
    * Maps an `Optional<T>` to an `Optional<M>`.
    *

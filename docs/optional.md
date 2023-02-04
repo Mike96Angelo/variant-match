@@ -76,7 +76,7 @@ const value = None;
 ```
 
 ## Optional
-Both Some(T) and None are instances of Optional. Optional extends the SumTypeClass which provides the match method. Optional add additional methods that make working with Optional more connivent.
+Both Some(T) and None are instances of Optional. Optional extends the VariantTypeClass which provides the match method. Optional add additional methods that make working with Optional more connivent.
 
 ### Optional.map(mapper)
 Maps this `Optional<T>` to an `Optional<M>`.
