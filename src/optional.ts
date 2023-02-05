@@ -121,9 +121,9 @@ const toOptional = <T>(value: T): FlattenOptional<T> =>
   value != null ? Some(value) : None;
 
 /**
- * Converts a func of type (A) => B to a func of type (Optional<a>) => Optional<B>
- * @param mapper - A mapping function (A) => B
- * @returns (Optional<a>) => Optional<B>
+ * Converts a func of type `(A) => B` to a func of type `(Optional<a>) => Optional<B>`
+ * @param mapper - A mapping function `(A) => B`
+ * @returns `(Optional<a>) => Optional<B>`
  */
 function OptionalMapper<A, B extends Optional<any>>(
   mapper: Func<[value: A], B>
@@ -138,10 +138,10 @@ function OptionalMapper(
 }
 
 /**
- * Converts a func of type (A, B) => C to a func of type (Optional<A>, Optional<B>) => Optional<C>
+ * Converts a func of type `(A, B) => C` to a func of type `(Optional<A>, Optional<B>) => Optional<C>`
  *
- * @param combiner - A combining function (A, B) => C
- * @returns (Optional<A>, Optional<B>) => Optional<C>
+ * @param combiner - A combining function `(A, B) => C`
+ * @returns `(Optional<A>, Optional<B>) => Optional<C>`
  */
 function OptionalCombiner<A, B, C extends Optional<any>>(
   combiner: Func<[a: A, b: B], C>
