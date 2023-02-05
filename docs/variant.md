@@ -7,8 +7,8 @@
   - [.match(matcher)](#varianttypeclassmatchmatcher)
 - [Included Variants](/docs/variant.md)
   - [Optional Variant](/docs/optional.md)
-  - [OptionalPair Variant](/docs/optional-pair.md)
-  - [Result Variant](/docs/result.md)
+  - OptionalPair Variant (coming soon)
+  - Result Variant (coming soon)
 
 ## What are Variants?
 
