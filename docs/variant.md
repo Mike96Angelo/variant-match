@@ -21,14 +21,14 @@ A match expression takes in a variant object and named branches. Evaluating the 
 **Example:**
 
 ```ts
-import { Variant, variant, VariantClass } from "variant-match";
+import { Variant, variant, VariantTypeClass } from "variant-match";
 
 type ABCVariant =
   | Variant<"A", [a: string]>
   | Variant<"B", [b: number, bool: boolean]>
   | Variant<"C">;
 
-class ABC extends VariantClass<ABCVariant> {
+class ABC extends VariantTypeClass<ABCVariant> {
   // add any useful methods for ABC variants
 }
 
