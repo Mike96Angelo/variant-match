@@ -12,11 +12,9 @@
 
 ## What are Variants?
 
-Variants are a simple yet powerful way to represent a set of various states that can contain deferring data. Variants help you write code in a way where invalid states are not representable. Together with the match expression this can greatly reduce complexity and help improve readability of the code.
+Variants are a simple yet powerful way to represent a set of various states that can contain deferring data. Variants help you write code in a way where invalid states are not representable. Variant types extend the `VariantTypeClass` that provides a `match` method used to operate on the different variants in the type class.
 
-## What is a Match Expression?
-
-A match expression takes in a variant object and named branches. Evaluating the match expression will execute the named branch that match the variant's kind. If a variant contains data that data is passed into the named branch that matches the variant's kind. The match expression returns that value returned by the named branch that was executed.
+The `match` method takes in named branches. Executing the match method will execute the named branch that match the variant's kind. If a variant contains data that data is passed into the named branch that matches the variant's kind. The match method returns the value returned by the named branch that was executed.
 
 **Example:**
 

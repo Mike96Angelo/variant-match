@@ -11,19 +11,16 @@ Brings variant match pattern to TypeScript.
 
 - [Documentation](/docs/variant.md)
 - [What are Variants?](#what-are-variants)
-- [What is a Match Expression?](#what-is-a-match-expression)
 - [Getting Started](#getting-started)
-- [Included Variant Classes](#included-variant-classes)
+- [Included Variant Type Classes](#included-variant-type-classes)
   - [Optional](#optional)
   - [Result](#result)
 
 ## What are Variants?
 
-Variants are a simple yet powerful way to represent a set of various states that can contain deferring data. Variants help you write code in a way where invalid states are not representable. Together with the match expression this can greatly reduce complexity and help improve readability of the code.
+Variants are a simple yet powerful way to represent a set of various states that can contain deferring data. Variants help you write code in a way where invalid states are not representable. Variant types extend the `VariantTypeClass` that provides a `match` method used to operate on the different variants in the type class.
 
-## What is a Match Expression?
-
-A match expression takes in a variant object and named branches. Evaluating the match expression will execute the named branch that match the variant's kind. If a variant contains data that data is passed into the named branch that matches the variant's kind. The match expression returns that value returned by the named branch that was executed.
+The `match` method takes in named branches. Executing the match method will execute the named branch that match the variant's kind. If a variant contains data that data is passed into the named branch that matches the variant's kind. The match method returns the value returned by the named branch that was executed.
 
 ## Getting Started
 
@@ -86,8 +83,8 @@ handleA(C); // 'B or C'
 
 ```
 
-## Included Variant Classes
-Included with this library are two variant classes: Optional and Result.
+## Included Variant Type Classes
+Included with this library are two variant type classes: Optional and Result.
 
 ### Optional
 This variant class has two variants: `Some<T>` and `None`. The `Some<T>` represents that there is some value of type `T`. The `None` represents that there is no value at all.
