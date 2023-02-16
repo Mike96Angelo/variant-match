@@ -5,21 +5,22 @@ The Optional variant is a way to represent a value that is optional meaning the 
 ### Table of Contents
 
 - [Variant Match](/docs/variant.md)
-- [Optional(value)](#optionalvalue)
-  - [.Some(value)](#somevalue)
-  - [.None](#none)
-  - [.map(value, mapper)](#optionalmapvalue-mapper)
-  - [.fallback(value, fallback)](#optionalfallbackvalue-fallback)
-  - [.returnOptional(func)](#optionalreturnoptionalfunc)
+- [toOptional(value)](#tooptionalvalue)
+- [Some(value)](#somevalue)
+- [None](#none)
+- [Optional](#optional)
+  - [.map(mapper)](#optionalmapmapper)
+  - [.combine(value, mapper)](#optionalcombinevalue-mapper)
+  - [.fallback(fallback)](#optionalfallbackfallback)
+  - [.toResult(error)](#optionaltoresulterror)
 
 Example:
 
 ```ts
-import { match } from "variant-match";
 import { Optional, Some, None } from "variant-match/optional";
 
 const handleOptionalString = (str: Optional<string>) => {
-  return match(str, {
+  return str.match({
     Some(str) {
       return str;
     },
@@ -33,7 +34,7 @@ handleOptionalString(Some("test")); // 'test'
 handleOptionalString(None); // 'default string'
 ```
 
-## Optional(value)
+## toOptional(value)
 Converts a nullable type into an Optional variant.
 If the `value` is nullish it returns the None variant
 otherwise it wraps the `value` in the Some variant.
@@ -46,15 +47,15 @@ otherwise it wraps the `value` in the Some variant.
 
 **Example:**
 ```ts
-Optional(9); // Some(9)
-Optional(null); // None
-Optional(undefined); // None
+toOptional(9); // Some(9)
+toOptional(null); // None
+toOptional(undefined); // None
 ```
 
 ### Some(value)
 Returns a variant that represents some value. This variant stores one value.
 
-**Kind**: static method of [`Optional`](#optionalvalue)  
+
 **Returns**: A `Some<T>` variant
 | Param | Description |
 | --- | --- |
@@ -62,81 +63,86 @@ Returns a variant that represents some value. This variant stores one value.
 
 **Example:**
 ```ts
-const value = Optional.Some('string');
-// or
 const value = Some('string');
 ```
 
 ### None
 A variant that represents no value.
 
-**Kind**: static property of [`Optional`](#optionalvalue)  
 
 **Example:**
 ```ts
-const value = Optional.None;
-// or
 const value = None;
 ```
 
-### Optional.map(value, mapper)
-Maps an `Optional<T>` to an `Optional<M>`.
+## Optional
+Both Some(T) and None are instances of Optional. Optional extends the VariantTypeClass which provides the match method. Optional add additional methods that make working with Optional more connivent.
 
-**Kind**: static method of [`Optional`](#optionalvalue)  
+### Optional.map(mapper)
+Maps this `Optional<T>` to an `Optional<M>`.
+
+**Kind**: method of [`Optional`](#optionalvalue)  
 **Returns**: An `Optional<M>`  
 
 | Param | Description |
 | --- | --- |
-| value | An `Optional<T>` |
 | mapper | A function that maps `T` to `M` |
 
 **Example:**
 ```ts
-Optional.map(Some(9), (num) => num.toString()); // Some("9")
-Optional.map(None, (num) => num.toString()); // None
+Some(9).map((num) => num.toString()); // Some("9")
+None.map((num) => num.toString()); // None
 ```
 
-### Optional.fallback(value, fallback)
-If `value` is the Some variant it returns the value stored in it,
+### Optional.combine(value, mapper)
+Combines this `Optional<T>` with `Optional<B>` to make `Optional<C>`.
+
+**Kind**: method of [`Optional`](#optionalvalue)  
+**Returns**: An `Optional<C>`  
+
+| Param | Description |
+| --- | --- |
+| value | An `Optional<B>` |
+| combiner | A function that combines `T` and `B` into `C` |
+
+**Example:**
+```ts
+Some(9).combine(Some(1), (a, b) => a + b); // Some(10)
+Some(9).combine(None, (a, b) => a + b); // None
+None.combine(Some(1), (a, b) => a + b); // None
+None.combine(None, (a, b) => a + b); // None
+```
+
+### Optional.fallback(fallback)
+If this Optional is the Some variant it returns the value stored in it,
 otherwise it returns the result of executing the `fallback` function.
 
-**Kind**: static method of [`Optional`](#optionalvalue)  
+**Kind**: method of [`Optional`](#optionalvalue)  
 **Returns**: The value stored in the Some variant or the result of calling `fallback`.  
 
 | Param | Description |
 | --- | --- |
-| value | An Optional variant |
 | fallback | A function to call if `value` is the None variant. |
 
 **Example:**
 ```ts
-Optional.fallback(Some(4), () => 0); // 4
-Optional.fallback(None, () => 0); // 0
+Some(4).fallback(() => 0); // 4
+None.fallback(() => 0); // 0
 ```
 
-### Optional.returnOptional(func)
-A higher-order function that wraps a function with
-a nullable return signature and converts it to a
-Optional return signature.
+### Optional.toResult(error)
+If this Optional is the Some variant it returns the value stored in it wrapped in Ok,
+otherwise it returns the result of executing the `error` function wrapped in Err.
 
-**Kind**: static method of [`Optional`](#optionalvalue)  
-**Returns**: A new function that calls `func` wrapping its
-         return in an Optional.  
+**Kind**: method of [`Optional`](#optionalvalue)  
+**Returns**: A `Result<T, E>`.  
 
 | Param | Description |
 | --- | --- |
-| func | A function with a nullable return signature |
+| error | A function to call if this is the None variant to compute the error. |
 
 **Example:**
 ```ts
-function sometimesNull() {
-  if (Math.random() > 0.5) {
-    return 'value';
-  }
-
-  return null;
-}
-
-const sometimes = Optional.returnOptional(sometimesNull);
-//    ^? () => Optional<string>
+Some(4).toResult(() => new Error('Missing value')); // Ok(4)
+None.toResult(() => new Error('Missing value')); // Err(Error('Missing value'))
 ```

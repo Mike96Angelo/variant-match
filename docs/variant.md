@@ -3,24 +3,41 @@
 ### Table of Contents
 
 - [variant(kind, ...values)](#variantkind-values)
-- [match(variant, matcher, catchAll)](#matchvariant-matcher-catchall)
+- [VariantTypeClass](#varianttypeclass)
+  - [.match(matcher)](#varianttypeclassmatchmatcher)
 - [Included Variants](/docs/variant.md)
   - [Optional Variant](/docs/optional.md)
-  - [Result Variant](/docs/result.md)
+  - OptionalPair Variant (coming soon)
+  - Result Variant (coming soon)
 
-Example:
+## What are Variants?
+
+Variants are a simple yet powerful way to represent a set of various states that can contain deferring data. Variants help you write code in a way where invalid states are not representable. Variant types extend the `VariantTypeClass` that provides a `match` method used to operate on the different variants in the type class.
+
+The `match` method takes in named branches. Executing the match method will execute the named branch that match the variant's kind. If a variant contains data that data is passed into the named branch that matches the variant's kind. The match method returns the value returned by the named branch that was executed.
+
+**Example:**
 
 ```ts
-import { variant, match, InferVariant } from "variant-match";
+import { Variant, variant, VariantTypeClass } from "variant-match";
 
-const A = (a: string) => variant("A", a);
-const B = (b: number, bool: boolean) => variant("B", b, bool);
-const C = variant("C");
+type ABCVariant =
+  | Variant<"A", [a: string]>
+  | Variant<"B", [b: number, bool: boolean]>
+  | Variant<"C">;
 
-type ABC = InferVariant<typeof A | typeof B | typeof C>;
+class ABC extends VariantTypeClass<ABCVariant> {
+  // add any useful methods for ABC variants
+}
 
-const handleABCVariants = (value: ABC) =>
-  match(value, {
+const A = (a: string) => new ABC(variant("A", a));
+const B = (b: number, bool: boolean) => new ABC(variant("B", b, bool));
+const C = new ABC(variant("C"));
+
+export { A, B, C };
+
+const handleABC = (abc: ABC) =>
+  abc.match({
     A(a) {
       return `A: ${a}`;
     },
@@ -32,25 +49,26 @@ const handleABCVariants = (value: ABC) =>
     },
   });
 
-handleABCVariants(A("test")); // 'A: test'
-handleABCVariants(B(123, true)); // 'B: 123 | true'
-handleABCVariants(C); // 'C'
+handleABC(A("string")); // 'A: string'
+handleABC(B(123, true)); // 'B: 123 | true'
+handleABC(C); // 'C'
 
-const handleABCVariantsOnlyA = (value: ABC) =>
-  match(
-    value,
-    {
-      A(a) {
-        return `A: ${a}`;
-      },
+const handleA = (abc: ABC) =>
+  abc.match({
+    A(a) {
+      return `A: ${a}`;
     },
-    (v) => "B or C"
-    // v: B(number, boolean) | C
-  );
 
-handleABCVariantsOnlyA(A("test")); // 'A: test'
-handleABCVariantsOnlyA(B(123, true)); // 'B or C'
-handleABCVariantsOnlyA(C); // 'B or C'
+    // catch all
+    _() {
+      return "B or C";
+    },
+  });
+
+handleA(A("string")); // 'A: string'
+handleA(B(123, true)); // 'B or C'
+handleA(C); // 'B or C'
+
 ```
 
 ### variant(kind, ...values)
@@ -63,13 +81,16 @@ Creates a instance of a variant with the givin kind and values.
 | kind | A unique name, this name will be used as the named branch to execute in the match expression. |
 | ...values | Any data that that will be stored in the variant, this data will be available as arguments within the named branch of a match expression. |
 
-### match(variant, matcher, catchAll)
-Executes a named branch that matches the variant passed in.
+### VariantTypeClass
+VariantTypeClass is an abstract class that can be extended to create variant types.
 
-**Returns**: The result of the named branch or catchAll that was executed.  
+### VariantTypeClass.match(matcher)
+Executes a named branch that matches the this variant.
+
+**Kind**: method of [`VariantTypeClass`](#varianttypeclass)  
+**Returns**:  The result of the named branch or catchAll (`_`) that was executed.  
 
 | Param | Description |
 | --- | --- |
-| variant | A variant to match on. |
 | matcher | An object containing named branches for each variant kind. |
-| catchAll | An optional catch-all branch used if you don't need to handle all branches independently. |
+| matcher._ | An optional catch-all branch used if you don't need to handle all branches independently. |

@@ -9,18 +9,18 @@ Brings variant match pattern to TypeScript.
 
 ### Table of Contents
 
-- [What are Variants?](#what-are-variants)
-- [What is a Match Expression?](#what-is-a-match-expression)
-- [Getting Started](#getting-started)
 - [Documentation](/docs/variant.md)
+- [What are Variants?](#what-are-variants)
+- [Getting Started](#getting-started)
+- [Included Variant Type Classes](#included-variant-type-classes)
+  - [Optional](#optional)
+  - [Result](#result)
 
 ## What are Variants?
 
-Variants are a simple yet powerful way to represent a set of various states that can contain deferring data. Variants help you write code in a way where invalid states are not representable. Together with the match expression this can greatly reduce complexity and help improve readability of the code.
+Variants are a simple yet powerful way to represent a set of various states that can contain deferring data. Variants help you write code in a way where invalid states are not representable. Variant types extend the `VariantTypeClass` that provides a `match` method used to operate on the different variants in the type class.
 
-## What is a Match Expression?
-
-A match expression takes in a variant object and named branches. Evaluating the match expression will execute the named branch that match the variant's kind. If a variant contains data that data is passed into the named branch that matches the variant's kind. The match expression returns that value returned by the named branch that was executed.
+The `match` method takes in named branches. Executing the match method will execute the named branch that match the variant's kind. If a variant contains data that data is passed into the named branch that matches the variant's kind. The match method returns the value returned by the named branch that was executed.
 
 ## Getting Started
 
@@ -31,16 +31,25 @@ $ npm install variant-match
 ### Example:
 
 ```ts
-import { variant, match, InferVariant } from "variant-match";
+import { Variant, variant, VariantTypeClass } from "variant-match";
 
-const A = (a: string) => variant("A", a);
-const B = (b: number, bool: boolean) => variant("B", b, bool);
-const C = variant("C");
+type ABCVariant =
+  | Variant<"A", [a: string]>
+  | Variant<"B", [b: number, bool: boolean]>
+  | Variant<"C">;
 
-type ABC = InferVariant<typeof A | typeof B | typeof C>;
+class ABC extends VariantTypeClass<ABCVariant> {
+  // add any useful methods for ABC variants
+}
 
-const handleABCVariants = (value: ABC) =>
-  match(value, {
+const A = (a: string) => new ABC(variant("A", a));
+const B = (b: number, bool: boolean) => new ABC(variant("B", b, bool));
+const C = new ABC(variant("C"));
+
+export { A, B, C };
+
+const handleABC = (abc: ABC) =>
+  abc.match({
     A(a) {
       return `A: ${a}`;
     },
@@ -52,23 +61,79 @@ const handleABCVariants = (value: ABC) =>
     },
   });
 
-handleABCVariants(A("test")); // 'A: test'
-handleABCVariants(B(123, true)); // 'B: 123 | true'
-handleABCVariants(C); // 'C'
+handleABC(A("string")); // 'A: string'
+handleABC(B(123, true)); // 'B: 123 | true'
+handleABC(C); // 'C'
 
-const handleABCVariantsOnlyA = (value: ABC) =>
-  match(
-    value,
-    {
-      A(a) {
-        return `A: ${a}`;
-      },
+const handleA = (abc: ABC) =>
+  abc.match({
+    A(a) {
+      return `A: ${a}`;
     },
-    (v) => "B or C"
-    // v: B(number, boolean) | C
-  );
 
-handleABCVariantsOnlyA(A("test")); // 'A: test'
-handleABCVariantsOnlyA(B(123, true)); // 'B or C'
-handleABCVariantsOnlyA(C); // 'B or C'
+    // catch all
+    _() {
+      return "B or C";
+    },
+  });
+
+handleA(A("string")); // 'A: string'
+handleA(B(123, true)); // 'B or C'
+handleA(C); // 'B or C'
+
+```
+
+## Included Variant Type Classes
+Included with this library are two variant type classes: Optional and Result.
+
+### Optional
+This variant class has two variants: `Some<T>` and `None`. The `Some<T>` represents that there is some value of type `T`. The `None` represents that there is no value at all.
+
+**Example:**
+```ts
+import { None, Some, Optional } from "variant-match/optional";
+
+const parseInteger = (value: string): Optional<number> => {
+  const integer = parseInt(value, 10);
+
+  if (!Number.isInteger(integer)) {
+    return None;
+  }
+
+  return Some(integer);
+};
+
+const doubleStringNumberOrZero = (value: string) => 
+  parseInteger(value)
+    .map((n) => n * 2)
+    .fallback(() => 0);
+
+doubleStringNumberOrZero('2'); // 4
+doubleStringNumberOrZero('string'); // 0
+```
+
+### Result
+This variant class has two variants: `Ok<T>` and `Err<E>`. The `Ok<T>` represents that there is an ok value of type `T`. The `Err<E>` represents that there is an error of type `E`.
+
+**Example:**
+```ts
+import { Err, Ok, Result } from "variant-match/result";
+
+const parseInteger2 = (value: string): Result<number, TypeError> => {
+  const integer = parseInt(value, 10);
+
+  if (!Number.isInteger(integer)) {
+    return Err(new TypeError('Could not parse value into integer.'));
+  }
+
+  return Ok(integer);
+};
+
+const doubleStringNumberOrZero2 = (value: string) =>
+  parseInteger2(value)
+    .map((n) => n * 2)
+    .fallback(() => 0);
+
+doubleStringNumberOrZero2("2"); // 4
+doubleStringNumberOrZero2("string"); // 0
 ```
