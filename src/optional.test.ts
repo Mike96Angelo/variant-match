@@ -9,9 +9,9 @@ import { Err, Ok } from "./result";
 
 describe("Some", () => {
   it.each([undefined, null])(
-    "Returns the None variant of Optional when a nullish value is passed to it.",
+    "Throws when a nullish value is passed to it.",
     (value) => {
-      expect(Some(value!)).toBe(None);
+      expect(() => Some(value!)).toThrow();
     }
   );
 
@@ -166,7 +166,7 @@ describe("Optional", () => {
 
   describe(".toResult", () => {
     it("Calls the passed in error func when called on the None variant.", () => {
-      const mockError = jest.fn();
+      const mockError = jest.fn(() => new Error("some error"));
 
       None.toResult(mockError);
 
@@ -175,7 +175,7 @@ describe("Optional", () => {
     });
 
     it("Does not call the passed in error func when called on the Some variant.", () => {
-      const mockError = jest.fn();
+      const mockError = jest.fn(() => new Error("some error"));
 
       Some(0).toResult(mockError);
 
