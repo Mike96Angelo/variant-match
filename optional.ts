@@ -1,6 +1,6 @@
-import { Err, Ok, Result } from "./result";
-import { Func } from "./util.types";
-import { Variant, variant, VariantTypeClass } from "./variant";
+import { Err, Ok, Result } from "./result.js";
+import { Func } from "./util.types.js";
+import { Variant, variant, VariantTypeClass } from "./variant.js";
 
 type OptionalVariants<T> = Variant<"Some", [T]> | Variant<"None">;
 
@@ -63,6 +63,10 @@ class Optional<T> extends VariantTypeClass<OptionalVariants<T>> {
    */
   combine<B, C>(b: Optional<B>, combiner: Func<[a: T, b: B], C>): Optional<C> {
     return this.map((a) => b.map((b) => combiner(a, b)));
+  }
+
+  filter(filter: Func<[value: T], boolean>) {
+    return this.map((value) => (filter(value) ? value : None));
   }
 
   /**

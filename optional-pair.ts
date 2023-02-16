@@ -1,6 +1,6 @@
-import { Optional, toOptional, None } from "./optional";
-import { Func } from "./util.types";
-import { Variant, variant, VariantTypeClass } from "./variant";
+import { Optional, toOptional, None } from "./optional.js";
+import { Func } from "./util.types.js";
+import { Variant, variant, VariantTypeClass } from "./variant.js";
 
 type OptionalPairVariants<A, B> =
   | Variant<"First", [first: A]>
