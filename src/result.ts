@@ -33,7 +33,6 @@ class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
    * @param mapErr - A function that maps `E` to `ME`
    * @returns An `Result<M, E>`
    */
-  map<M extends Result<any, any>>(mapOk: Func<[value: T], M>): M;
   map<M>(mapOk: Func<[value: T], M>): ResultType<M, E>;
   map<M, ME>(
     mapOk: Func<[value: T], M>,
@@ -168,6 +167,7 @@ function Err<T, E>(error: NonNullable<E>) {
 
   return new Result<NonNullable<T>, NonNullable<E>>(variant("Err", error));
 }
+
 /**
  * Converts a `err`, `value` pair into a Result variant. If `err` is not nullish it
  * returns the `err` wrapped in the Err variant. Otherwise it returns `value`
@@ -187,54 +187,4 @@ function toResult(err: any, value: any): ResultType<any, any> {
   return Ok(value);
 }
 
-/**
- * Converts a pair of funcs of type `(A) => B` and `(AE) => BE` to a
- * func of type `(Result<A, AE>) => Result<B, BE>`
- *
- * @param mapOk - A mapping function `(A) => B`
- * @param mapErr - A mapping function `(AE) => BE`
- * @returns `(Result<A, AE>) => Result<B, BE>`
- */
-function ResultMapper<T, E, M extends Result<any, any>>(
-  mapOk: Func<[value: T], M>
-): Func<[a: Result<T, E>], M>;
-function ResultMapper<T, E, M>(
-  mapOk: Func<[value: T], M>
-): Func<[a: Result<T, E>], ResultType<M, E>>;
-function ResultMapper<T, E, M, EM>(
-  mapOk: Func<[value: T], M>,
-  mapErr: Func<[value: E], EM>
-): Func<[a: Result<T, E>], ResultType<M, EM>>;
-function ResultMapper(
-  mapOk: Func<[any], any>,
-  mapErr?: Func<[any], any>
-): Func<[value: Result<any, any>], ResultType<any, any>> {
-  return (a) => a.map(mapOk, mapErr!);
-}
-
-/**
- * Converts a pair of funcs of type `(A, B) => C` and `(AE, BE) => CE` to a
- * func of type `(Result<A, AE>, Result<B, BE>) => Result<C, CE>`
- *
- * @param mapOk - A mapping function `(A, B) => C`
- * @param mapErr - A mapping function `(AE, BE) => CE`
- * @returns `(Result<A, AE>, Result<B, BE>) => Result<C, CE>`
- */
-const ResultCombiner =
-  <A, AE, B, BE, C, CE>(
-    combineOk: Func<[a: A, b: B], C>,
-    combineErr: Func<[errors: OptionalPair<AE, BE>], CE>
-  ) =>
-  (a: Result<A, AE>, b: Result<B, BE>): ResultType<C, CE> =>
-    a.combine(b, combineOk, combineErr);
-
-export {
-  type ResultType as Result,
-  ResultOk,
-  ResultErr,
-  toResult,
-  ResultMapper,
-  ResultCombiner,
-  Ok,
-  Err,
-};
+export { type ResultType as Result, ResultOk, ResultErr, toResult, Ok, Err };
