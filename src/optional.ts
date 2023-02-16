@@ -20,7 +20,7 @@ class Optional<T> extends VariantTypeClass<OptionalVariants<T>> {
   /**
    * Maps an `Optional<T>` to an `Optional<M>`.
    *
-   * @param mapper - A function that maps T to M
+   * @param mapper - A function that maps `T` to `M`
    * @returns An `Optional<M>`
    */
   map<M extends Optional<any>>(mapper: Func<[value: T], M>): M;
@@ -66,9 +66,10 @@ class Optional<T> extends VariantTypeClass<OptionalVariants<T>> {
   }
 
   /**
-   * Converts this Optional<T> into Result<T, E>
-   * @param error - function to compute E in this Optional in the None variant.
-   * @returns Result<T, E>
+   * Converts this `Optional<T>` into `Result<T, E>`
+   *
+   * @param error - function to compute `E` if this Optional in the None variant.
+   * @returns `Result<T, E>`
    */
   toResult<E>(
     error: () => NonNullable<E>
@@ -86,6 +87,7 @@ class Optional<T> extends VariantTypeClass<OptionalVariants<T>> {
 
 /**
  * Some variant representing that their is some value.
+ *
  * @param value - A value to store in the Some variant.
  * @returns An Some variant
  */
@@ -123,6 +125,7 @@ const toOptional = <T>(value: T): OptionalType<T> =>
 
 /**
  * Converts a func of type `(A) => B` to a func of type `(Optional<a>) => Optional<B>`
+ *
  * @param mapper - A mapping function `(A) => B`
  * @returns `(Optional<A>) => Optional<B>`
  */

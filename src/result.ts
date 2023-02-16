@@ -27,7 +27,7 @@ const combineErrsAsArray = <A, B>(errs: OptionalPair<A, B>) =>
 
 class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
   /**
-   * Maps a `Result<T, E>` to a `Result<M, E>`
+   * Maps a `Result<T, E>` to a `Result<M, ME>`
    *
    * @param mapOk - A function that maps `T` to `M`
    * @param mapErr - A function that maps `E` to `ME`
@@ -75,10 +75,12 @@ class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
   }
 
   /**
-   * TODO
-   * @param b
-   * @param combiner
-   * @returns
+   * Combines this `Result<T, E>` with `Result<B, E>` to make `Result<C, CE>`.
+   *
+   * @param b - A `Result<B, BE>`
+   * @param combineOk - A function that combines `T` and `B` into `C`
+   * @param combineErr - A function that combines `E` and `BE` into `CE`
+   * @returns `Result<C, CE>`
    */
   combine<B, BE, C>(
     b: Result<B, BE>,
@@ -119,9 +121,9 @@ class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
   }
 
   /**
-   * TODO
-   * @param error
-   * @returns
+   * Converts this `Result<T, E>` into `Optional<T>`
+   *
+   * @returns `Optional<T>`
    */
   toOptional(): Optional<NonNullable<T>> {
     return this.match({
@@ -137,6 +139,7 @@ class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
 
 /**
  * Ok variant representing the result was ok.
+ *
  * @param value - A value to store in the Ok variant.
  * @returns An Ok variant
  */
@@ -152,6 +155,7 @@ function Ok<T, E>(value: NonNullable<T>) {
 
 /**
  * Err variant representing the result was an error.
+ *
  * @param error - A error to store in the Err variant.
  * @returns An Err variant
  */
@@ -184,15 +188,18 @@ function toResult(err: any, value: any): ResultType<any, any> {
 }
 
 /**
- * TODO
- * @param mapper
- * @returns
+ * Converts a pair of funcs of type `(A) => B` and `(AE) => BE` to a
+ * func of type `(Result<A, AE>) => Result<B, BE>`
+ *
+ * @param mapOk - A mapping function `(A) => B`
+ * @param mapErr - A mapping function `(AE) => BE`
+ * @returns `(Result<A, AE>) => Result<B, BE>`
  */
 function ResultMapper<T, E, M extends Result<any, any>>(
-  mapper: Func<[value: T], M>
+  mapOk: Func<[value: T], M>
 ): Func<[a: Result<T, E>], M>;
 function ResultMapper<T, E, M>(
-  mapper: Func<[value: T], M>
+  mapOk: Func<[value: T], M>
 ): Func<[a: Result<T, E>], ResultType<M, E>>;
 function ResultMapper<T, E, M, EM>(
   mapOk: Func<[value: T], M>,
@@ -206,10 +213,12 @@ function ResultMapper(
 }
 
 /**
- * TODO
- * @param combiner
+ * Converts a pair of funcs of type `(A, B) => C` and `(AE, BE) => CE` to a
+ * func of type `(Result<A, AE>, Result<B, BE>) => Result<C, CE>`
  *
- * @returns
+ * @param mapOk - A mapping function `(A, B) => C`
+ * @param mapErr - A mapping function `(AE, BE) => CE`
+ * @returns `(Result<A, AE>, Result<B, BE>) => Result<C, CE>`
  */
 const ResultCombiner =
   <A, AE, B, BE, C, CE>(
