@@ -8,6 +8,8 @@ type OptionalPairVariants<A, B> =
   | Variant<"Both", [first: A, second: B]>
   | Variant<"Neither">;
 
+type OptionalPairType<A, B> = OptionalPair<NonNullable<A>, NonNullable<B>>;
+
 class OptionalPair<A, B> extends VariantTypeClass<OptionalPairVariants<A, B>> {
   first(): Optional<A> {
     return this.match({
@@ -129,4 +131,11 @@ const toOptionalPair = <A, B>(
 ): OptionalPair<NonNullable<A>, NonNullable<B>> =>
   Both(toOptional(first), toOptional(second));
 
-export { type OptionalPair, Neither, First, Second, Both, toOptionalPair };
+export {
+  type OptionalPairType as OptionalPair,
+  Neither,
+  First,
+  Second,
+  Both,
+  toOptionalPair,
+};

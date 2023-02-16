@@ -14,7 +14,7 @@ type UnwrapOptional<T> = T extends Optional<infer K>
   ? T
   : never;
 
-type FlattenOptional<T> = Optional<UnwrapOptional<T>>;
+type OptionalType<T> = Optional<UnwrapOptional<T>>;
 
 class Optional<T> extends VariantTypeClass<OptionalVariants<T>> {
   /**
@@ -55,10 +55,11 @@ class Optional<T> extends VariantTypeClass<OptionalVariants<T>> {
   }
 
   /**
-   * TODO
-   * @param b
-   * @param combiner
-   * @returns
+   * Combines this `Optional<T>` with `Optional<B>` to make `Optional<C>`.
+   *
+   * @param b - An `Optional<B>`
+   * @param combiner - A function that combines `T` and `B` into `C`
+   * @returns `Optional<C>`
    */
   combine<B, C>(b: Optional<B>, combiner: Func<[a: T, b: B], C>): Optional<C> {
     return this.map((a) => b.map((b) => combiner(a, b)));
@@ -89,7 +90,7 @@ class Optional<T> extends VariantTypeClass<OptionalVariants<T>> {
  * @returns An Some variant
  */
 function Some<T extends Optional<any>>(value: T): T;
-function Some<T>(value: NonNullable<T>): FlattenOptional<T>;
+function Some<T>(value: NonNullable<T>): OptionalType<T>;
 function Some(value: any) {
   if (value == null) {
     throw new TypeError(
@@ -117,13 +118,13 @@ const None = new Optional<any>(variant("None"));
  * @param value - A nullable value.
  * @returns An Optional variant.
  */
-const toOptional = <T>(value: T): FlattenOptional<T> =>
+const toOptional = <T>(value: T): OptionalType<T> =>
   value != null ? Some(value) : None;
 
 /**
  * Converts a func of type `(A) => B` to a func of type `(Optional<a>) => Optional<B>`
  * @param mapper - A mapping function `(A) => B`
- * @returns `(Optional<a>) => Optional<B>`
+ * @returns `(Optional<A>) => Optional<B>`
  */
 function OptionalMapper<A, B extends Optional<any>>(
   mapper: Func<[value: A], B>
@@ -156,7 +157,7 @@ function OptionalCombiner(
 }
 
 export {
-  type FlattenOptional as Optional,
+  type OptionalType as Optional,
   UnwrapOptional,
   Some,
   None,

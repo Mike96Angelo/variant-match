@@ -220,7 +220,7 @@ const ResultCombiner =
     a.combine(b, combineOk, combineErr);
 
 export {
-  type Result,
+  type ResultType as Result,
   ResultOk,
   ResultErr,
   toResult,
