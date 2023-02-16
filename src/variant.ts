@@ -11,10 +11,6 @@ type Matcher<V, R> = UnionToIntersection<
   V extends Variant<infer K, any> ? Record<K, VariantBranch<V, R>> : never
 >;
 
-type MatcherReturn<M> = M extends Record<string, Func<any[], infer R>>
-  ? R
-  : never;
-
 const assertVariant = (v: any) => {
   const hasType = typeof v?.kind === "string";
   const hasValues = Array.isArray(v?.values);
@@ -68,12 +64,13 @@ abstract class VariantTypeClass<V extends Variant<any, any>> {
    *                   all branches independently.
    * @returns The result of the named branch or catchAll that was executed.
    */
-  match<M extends Matcher<V, any>>(
-    matcher: Exact<M, V["kind"]>
-  ): MatcherReturn<M>;
-  match<M extends Partial<Matcher<V, any>>, R>(
-    matcher: Exact<M & Record<"_", Func<[this], R>>, V["kind"] | "_">
-  ): MatcherReturn<M> | R;
+  match<R>(matcher: Exact<Matcher<V, R>, V["kind"]>): R;
+  match<R>(
+    matcher: Exact<
+      Partial<Matcher<V, R>> & Record<"_", Func<[this], R>>,
+      V["kind"] | "_"
+    >
+  ): R;
   match(matcher: any) {
     const func = matcher[this.variant.kind] ?? matcher._;
 
