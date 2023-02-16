@@ -4,8 +4,8 @@ import {
   OptionalMapper,
   Some,
   toOptional,
-} from "./optional";
-import { Err, Ok } from "./result";
+} from "../optional.js";
+import { Err, Ok } from "../result.js";
 
 describe("Some", () => {
   it.each([undefined, null])(

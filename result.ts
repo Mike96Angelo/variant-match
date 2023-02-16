@@ -1,7 +1,12 @@
-import { None, Optional, toOptional } from "./optional";
-import { First, OptionalPair, Second, toOptionalPair } from "./optional-pair";
-import { Func } from "./util.types";
-import { Variant, variant, VariantTypeClass } from "./variant";
+import { None, Optional, toOptional } from "./optional.js";
+import {
+  First,
+  OptionalPair,
+  Second,
+  toOptionalPair,
+} from "./optional-pair.js";
+import { Func } from "./util.types.js";
+import { Variant, variant, VariantTypeClass } from "./variant.js";
 
 type ResultVariants<T, E> = Variant<"Ok", [T]> | Variant<"Err", [E]>;
 type ResultOk<T> = T extends Result<infer K, any> ? K : never;
@@ -115,6 +120,20 @@ class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
             return Err(combineErr(toOptionalPair(ae, be)));
           },
         });
+      },
+    });
+  }
+
+  filter<E>(
+    filter: Func<[value: T], boolean>,
+    error: Func<[], NonNullable<E>>
+  ): ResultType<T, E> {
+    return this.match({
+      Ok(value) {
+        return filter(value) ? Ok(value!) : Err(error());
+      },
+      Err() {
+        return Err(error());
       },
     });
   }

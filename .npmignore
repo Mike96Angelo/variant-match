@@ -1,0 +1,7 @@
+**/*.ts
+!**/*.d.ts
+tests/**/*
+src\ copy/**/*
+docs/**/*
+.github/**/*
+jest.config.js

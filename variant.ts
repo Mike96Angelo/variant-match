@@ -1,8 +1,8 @@
-import { Func, UnionToIntersection, Exact } from "./util.types";
+import { Func, UnionToIntersection, Exact } from "./util.types.js";
 
 type Variant<K extends string, V extends any[] = []> = {
   readonly kind: K;
-  readonly values: V;
+  readonly values: Readonly<V>;
 };
 
 type VariantBranch<V, R> = V extends Variant<any, infer A> ? Func<A, R> : never;
@@ -49,11 +49,16 @@ const variant = <K extends string, V extends any[]>(
 /**
  * VariantTypeClass is an abstract class used to define sum type classes which contain variants.
  */
-abstract class VariantTypeClass<V extends Variant<any, any>> {
-  private variant: V;
+abstract class VariantTypeClass<V extends Variant<any, any[]>> {
+  readonly variant: V;
+
   constructor(variant: V) {
     assertVariant(variant);
-    this.variant = variant;
+    this.variant = { ...variant, values: [...variant.values] };
+
+    Object.freeze(this.variant.values);
+    Object.freeze(this.variant);
+    Object.freeze(this);
   }
 
   /**
