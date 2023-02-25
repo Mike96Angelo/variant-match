@@ -41,7 +41,7 @@ const handleA = (abc: ABC) => {
   }
   console.log(
     abc,
-    abc.match<string | number | boolean>({
+    abc.match({
       A(a) {
         return `A: ${a}`;
       },

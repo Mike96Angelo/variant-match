@@ -149,10 +149,10 @@ class Result<
   ): Result<T, E> {
     return this.match({
       Ok(value) {
-        return filter(value) ? Ok(value) : Err(error());
+        return filter(value) ? Ok<T, E>(value) : Err<T, E>(error());
       },
       Err() {
-        return Err(error());
+        return Err<T, E>(error());
       },
     });
   }

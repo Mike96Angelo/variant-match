@@ -40,10 +40,10 @@ class OptionalPair<
     });
   }
 
-  both(): Optional<[first: A, second: B]> {
+  both(): Optional<Readonly<[first: A, second: B]>> {
     return this.match({
       Both(first, second) {
-        return toOptional([first, second]);
+        return toOptional([first, second] as const);
       },
       _() {
         return None;
