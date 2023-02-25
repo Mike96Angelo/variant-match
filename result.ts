@@ -5,16 +5,18 @@ import {
   Second,
   toOptionalPair,
 } from "./optional-pair.js";
-import { Func } from "./util.types.js";
+import { nonNullable, Func } from "./util.types.js";
 import { Variant, variant, VariantTypeClass } from "./variant.js";
 
-type ResultVariants<T, E> = Variant<"Ok", [T]> | Variant<"Err", [E]>;
-type ResultOk<T> = T extends Result<infer K, any> ? K : never;
-type ResultErr<T> = T extends Result<any, infer K> ? K : never;
+type ResultVariants<T extends nonNullable, E extends nonNullable> =
+  | Variant<"Ok", [T]>
+  | Variant<"Err", [E]>;
+type ResultOk<T> = T extends Result<infer K, nonNullable> ? K : never;
+type ResultErr<T> = T extends Result<nonNullable, infer K> ? K : never;
 
-type ResultType<T, E> = Result<NonNullable<T>, NonNullable<E>>;
-
-const combineErrsAsArray = <A, B>(errs: OptionalPair<A, B>) =>
+const combineErrsAsArray = <A extends nonNullable, B extends nonNullable>(
+  errs: OptionalPair<A, B>
+) =>
   errs.match({
     First(a) {
       return [a];
@@ -30,7 +32,10 @@ const combineErrsAsArray = <A, B>(errs: OptionalPair<A, B>) =>
     },
   });
 
-class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
+class Result<
+  T extends nonNullable = nonNullable,
+  E extends nonNullable = nonNullable
+> extends VariantTypeClass<ResultVariants<T, E>> {
   /**
    * Maps a `Result<T, E>` to a `Result<M, ME>`
    *
@@ -38,15 +43,12 @@ class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
    * @param mapErr - A function that maps `E` to `ME`
    * @returns An `Result<M, E>`
    */
-  map<M>(mapOk: Func<[value: T], M>): ResultType<M, E>;
-  map<M, ME>(
+  map<M extends nonNullable>(mapOk: Func<[value: T], M>): Result<M, E>;
+  map<M extends nonNullable, ME extends nonNullable>(
     mapOk: Func<[value: T], M>,
     mapErr: Func<[value: E], ME>
-  ): ResultType<M, ME>;
-  map(
-    mapOk: Func<[value: T], any>,
-    mapErr?: Func<[value: E], any>
-  ): ResultType<any, any> {
+  ): Result<M, ME>;
+  map(mapOk: Func<[value: T], any>, mapErr?: Func<[value: E], any>) {
     return this.match({
       Ok(value) {
         const result = mapOk(value);
@@ -86,20 +88,25 @@ class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
    * @param combineErr - A function that combines `E` and `BE` into `CE`
    * @returns `Result<C, CE>`
    */
-  combine<B, BE, C>(
+  combine<B extends nonNullable, BE extends nonNullable, C extends nonNullable>(
     b: Result<B, BE>,
     combineOk: Func<[a: T, b: B], C>
-  ): ResultType<C, (E | BE)[]>;
-  combine<B, BE, C, CE>(
+  ): Result<C, (E | BE)[]>;
+  combine<
+    B extends nonNullable,
+    BE extends nonNullable,
+    C extends nonNullable,
+    CE extends nonNullable
+  >(
     b: Result<B, BE>,
     combineOk: Func<[a: T, b: B], C>,
     combineErr: Func<[errors: OptionalPair<E, BE>], CE>
-  ): ResultType<C, CE>;
+  ): Result<C, CE>;
   combine(
-    b: Result<any, any>,
+    b: Result,
     combineOk: Func<[a: T, b: any], any>,
     combineErr: Func<[errors: OptionalPair<any, any>], any> = combineErrsAsArray
-  ): ResultType<any, any> {
+  ) {
     return this.match({
       Ok(a) {
         return b.match({
@@ -124,10 +131,10 @@ class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
     });
   }
 
-  filter<E>(
+  filter<E extends nonNullable>(
     filter: Func<[value: T], boolean>,
-    error: Func<[], NonNullable<E>>
-  ): ResultType<T, E> {
+    error: Func<[], E>
+  ): Result<T, E> {
     return this.match({
       Ok(value) {
         return filter(value) ? Ok(value!) : Err(error());
@@ -143,7 +150,7 @@ class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
    *
    * @returns `Optional<T>`
    */
-  toOptional(): Optional<NonNullable<T>> {
+  toOptional(): Optional<T> {
     return this.match({
       Ok(value) {
         return toOptional(value);
@@ -161,14 +168,14 @@ class Result<T, E> extends VariantTypeClass<ResultVariants<T, E>> {
  * @param value - A value to store in the Ok variant.
  * @returns An Ok variant
  */
-function Ok<T, E>(value: NonNullable<T>) {
+function Ok<T extends nonNullable, E extends nonNullable>(value: T) {
   if (value == null) {
     throw new TypeError(
       "Ok variant of Result cannot be constructed with null or undefined"
     );
   }
 
-  return new Result<NonNullable<T>, NonNullable<E>>(variant("Ok", value));
+  return new Result<T, E>(variant("Ok", value));
 }
 
 /**
@@ -177,14 +184,14 @@ function Ok<T, E>(value: NonNullable<T>) {
  * @param error - A error to store in the Err variant.
  * @returns An Err variant
  */
-function Err<T, E>(error: NonNullable<E>) {
+function Err<T extends nonNullable, E extends nonNullable>(error: E) {
   if (error == null) {
     throw new TypeError(
       "Err variant of Result cannot be constructed with null or undefined"
     );
   }
 
-  return new Result<NonNullable<T>, NonNullable<E>>(variant("Err", error));
+  return new Result<T, E>(variant("Err", error));
 }
 
 /**
@@ -196,9 +203,15 @@ function Err<T, E>(error: NonNullable<E>) {
  * @param value - A value representing the ok state.
  * @returns A Result.
  */
-function toResult<T, E>(err: E, value: T): ResultType<T, E>;
-function toResult<T, E>(err: E, value: T): ResultType<T, E>;
-function toResult(err: any, value: any): ResultType<any, any> {
+function toResult<T, E>(
+  err: E,
+  value: T
+): Result<NonNullable<T>, NonNullable<E>>;
+function toResult<T, E>(
+  err: E,
+  value: T
+): Result<NonNullable<T>, NonNullable<E>>;
+function toResult(err: any, value: any) {
   if (err != null) {
     return Err(err);
   }
@@ -206,4 +219,4 @@ function toResult(err: any, value: any): ResultType<any, any> {
   return Ok(value);
 }
 
-export { type ResultType as Result, ResultOk, ResultErr, toResult, Ok, Err };
+export { type Result, type ResultOk, type ResultErr, toResult, Ok, Err };
