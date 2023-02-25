@@ -17,7 +17,7 @@ The Optional variant is a way to represent a value that is optional meaning the 
 Example:
 
 ```ts
-import { Optional, Some, None } from "variant-match/optional";
+import { Optional, Some, None } from "variant-match";
 
 const handleOptionalString = (str: Optional<string>) => {
   return str.match({
