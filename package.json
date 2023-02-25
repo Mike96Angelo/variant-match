@@ -1,8 +1,7 @@
 {
   "name": "variant-match",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Brings variant match pattern to TypeScript.",
-  "type": "module",
   "main": "mod.js",
   "scripts": {
     "test": "jest"
