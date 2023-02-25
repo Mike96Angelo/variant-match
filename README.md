@@ -91,7 +91,7 @@ This variant class has two variants: `Some<T>` and `None`. The `Some<T>` represe
 
 **Example:**
 ```ts
-import { None, Some, Optional } from "variant-match/optional";
+import { None, Some, Optional } from "variant-match";
 
 const parseInteger = (value: string): Optional<number> => {
   const integer = parseInt(value, 10);
@@ -117,7 +117,7 @@ This variant class has two variants: `Ok<T>` and `Err<E>`. The `Ok<T>` represent
 
 **Example:**
 ```ts
-import { Err, Ok, Result } from "variant-match/result";
+import { Err, Ok, Result } from "variant-match";
 
 const parseInteger2 = (value: string): Result<number, TypeError> => {
   const integer = parseInt(value, 10);
