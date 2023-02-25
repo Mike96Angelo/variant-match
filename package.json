@@ -1,6 +1,6 @@
 {
   "name": "variant-match",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Brings variant match pattern to TypeScript.",
   "main": "mod.js",
   "scripts": {

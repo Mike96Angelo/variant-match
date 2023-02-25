@@ -131,13 +131,25 @@ class Result<
     });
   }
 
+  /**
+   * Converts Ok variants to Err variants if the `filter` predicate results in false.
+   *
+   * If this variant is Err or the `filter` predicate results in false a new Err variant
+   * will be constructed with the result of calling `error`. Otherwise the Ok variant is
+   * returned.
+   *
+   * @param filter - A predicate to determine whether or not to return the Ok variant or
+   *                 Err variant.
+   * @param error - Used to create the Err variant.
+   * @returns A new Result
+   */
   filter<E extends nonNullable>(
     filter: Func<[value: T], boolean>,
     error: Func<[], E>
   ): Result<T, E> {
     return this.match({
       Ok(value) {
-        return filter(value) ? Ok(value!) : Err(error());
+        return filter(value) ? Ok(value) : Err(error());
       },
       Err() {
         return Err(error());

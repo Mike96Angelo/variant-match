@@ -11,6 +11,7 @@ The Optional variant is a way to represent a value that is optional meaning the 
 - [Optional](#optional)
   - [.map(mapper)](#optionalmapmapper)
   - [.combine(value, mapper)](#optionalcombinevalue-mapper)
+  - [.filter(filter)](#optionalfilterfilter)
   - [.fallback(fallback)](#optionalfallbackfallback)
   - [.toResult(error)](#optionaltoresulterror)
 
@@ -111,6 +112,25 @@ Some(9).combine(Some(1), (a, b) => a + b); // Some(10)
 Some(9).combine(None, (a, b) => a + b); // None
 None.combine(Some(1), (a, b) => a + b); // None
 None.combine(None, (a, b) => a + b); // None
+```
+
+### Optional.filter(filter)
+Converts Some variants to None variants if the filter predicate results in false.
+   
+If this variant is None or the `filter` predicate results in false the None variant is returned. Otherwise the Some variant is returned.
+
+**Kind**: method of [`Optional`](#optionalvalue)  
+**Returns**: An `Optional<T>`  
+
+| Param | Description |
+| --- | --- |
+| filter | A predicate to determine whether or not to return the Some variant or None variant. |
+
+**Example:**
+```ts
+Some(10).filter((x) => x % 2 === 0); // Some(10)
+Some(11).filter((x) => x % 2 === 0); // None
+None.filter((x) => x % 2 === 0); // None
 ```
 
 ### Optional.fallback(fallback)

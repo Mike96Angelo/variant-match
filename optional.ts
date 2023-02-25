@@ -71,8 +71,18 @@ class Optional<T extends nonNullable = nonNullable> extends VariantTypeClass<
     return this.map((a) => b.map((b) => combiner(a, b)));
   }
 
-  filter(filter: Func<[value: T], boolean>) {
-    return this.map((value) => (filter(value) ? value : None));
+  /**
+   * Converts Some variants to None variants if the filter predicate results in false.
+   *
+   * If this variant is None or the `filter` predicate results in false the None variant
+   * is returned. Otherwise the Some variant is returned.
+   *
+   * @param filter - A predicate to determine whether or not to return the Some variant
+   *                 or None variant.
+   * @returns `Optional<T>`
+   */
+  filter(filter: Func<[value: T], boolean>): Optional<T> {
+    return this.map((value) => (filter(value) ? Some(value) : None));
   }
 
   /**
